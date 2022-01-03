@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "598590646323",
+    "firebase_url": "https://chiringuitostickers-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "chiringuitostickers",
+    "storage_bucket": "chiringuitostickers.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:598590646323:android:95cf24a9410488e5939b46",
+        "android_client_info": {
+          "package_name": "com.ruson.chiringuito"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "598590646323-b7onhm5plr7ru0s0q6occqst8n217jrc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDwQL_ByBeht7uJ-wO7ENfPUkzYqalgUKg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "598590646323-b7onhm5plr7ru0s0q6occqst8n217jrc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
