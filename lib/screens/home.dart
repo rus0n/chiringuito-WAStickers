@@ -8,6 +8,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:shimmer/shimmer.dart';
 
 class Home extends StatelessWidget {
   @override
@@ -25,7 +26,8 @@ class Home extends StatelessWidget {
         // Perform an update on the document
         transaction.update(_likesReference, {'likes': newFollowerCount});
 
-        h.favoritos.add(_sticker.id);
+        h.addFavoritos(_sticker.id);
+
         // Return the new count
         //return newFollowerCount;
       });
@@ -49,30 +51,37 @@ class Home extends StatelessWidget {
             ],
           ),
           body: h.stickers.isEmpty
-              ? Center(
-                  child: Container(
-                  height: 150,
-                  width: 150,
-                  decoration: BoxDecoration(
-                      color: Colors.lightBlueAccent,
-                      borderRadius: BorderRadius.all(Radius.circular(10))),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CircularProgressIndicator(
-                        color: Colors.white,
+              ? Shimmer(
+                  gradient: LinearGradient(colors: [
+                    Colors.white54,
+                    Theme.of(context).primaryColor,
+                    Colors.white54
+                  ]),
+                  child: GridView.builder(
+                      padding: EdgeInsets.all(16),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        childAspectRatio: 8 / 9,
                       ),
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Text('Cargando...'),
-                      )
-                    ],
-                  ),
-                ))
+                      itemCount: 30,
+                      itemBuilder: (_, index) => Card(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Container(
+                                      decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(8)))),
+                                )
+                              ],
+                            ),
+                          )))
               : RefreshIndicator(
-                  onRefresh: () async => h.update(),
+                  onRefresh: () async => h.stickers.refresh(),
                   child: GridView.builder(
                       cacheExtent: (h.stickers.length / 5) * 100,
                       padding: const EdgeInsets.all(16.0),

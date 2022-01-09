@@ -36,6 +36,36 @@
   <!-- This script installs service_worker.js to provide PWA functionality to
        application. For more information, see:
        https://developers.google.com/web/fundamentals/primers/service-workers -->
+
+       <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+       <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+       <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-analytics.js"></script>
+       <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-messaging.js"></script>
+       <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app-check.js"></script>
+       <script>
+        function onSubmit(token) {
+          document.getElementById("demo-form").submit();
+        }
+      </script>
+
+        <script>
+
+        var firebaseConfig = {
+          apiKey: "AIzaSyAZDPgO-T_IfDWd-gC-vLy1bsr-Ib6BGlA",
+          authDomain: "chiringuitostickers.firebaseapp.com",
+          databaseURL: "https://chiringuitostickers.firebaseio.app",
+          projectId: "chiringuitostickers",
+          storageBucket: "chiringuitostickers.appspot.com",
+          messagingSenderId: "598590646323",
+          appId: "1:598590646323:web:9dbe1e4a1de71fb5939b46",
+          measurementId: "G-L7QDG6MZQQ"
+        };
+      
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+
+      </script>
+  
   <script>
     var serviceWorkerVersion = null;
     var scriptLoaded = false;
