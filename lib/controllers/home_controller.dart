@@ -20,8 +20,8 @@ class HomeController extends GetxController {
   var gs = GetStorage();
 
   final BannerAd myBanner = BannerAd(
-    adUnitId: 'ca-app-pub-3940256099942544/6300978111',
-    //'ca-app-pub-6592025069346248/2775240563',
+    adUnitId: //'ca-app-pub-3940256099942544/6300978111',
+        'ca-app-pub-6592025069346248/2775240563',
     size: AdSize.banner,
     request: const AdRequest(),
     listener: const BannerAdListener(),
