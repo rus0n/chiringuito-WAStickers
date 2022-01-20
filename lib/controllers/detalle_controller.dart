@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:chiringuito/controllers/home_controller.dart';
 import 'package:chiringuito/models/stickers_model.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -31,7 +32,16 @@ class DetalleController extends GetxController {
     Get.dialog(SimpleDialog(
       title: Padding(
         padding: const EdgeInsets.all(14.0),
-        child: Text('Descargando espere...'),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: CircularProgressIndicator(),
+            ),
+            Text('Descargando espere...'),
+          ],
+        ),
       ),
     ));
     String dir = (await getApplicationDocumentsDirectory()).path;

@@ -28,15 +28,13 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   //inicializamos dependencias
 
-  await Firebase.initializeApp();
   //await FirebaseAppCheck.instance.activate(
   //    webRecaptchaSiteKey: "6Lc6DPcdAAAAANNKAykGIeGcl9MLsx0k50Vfbi-q");
 
   if (!kIsWeb) {
-    MobileAds.instance.initialize();
-    MobileAds.instance.updateRequestConfiguration((RequestConfiguration(
-        testDeviceIds: ["2BFA3503083AEAC9D69808A74FE955AF"],
-        tagForUnderAgeOfConsent: TagForChildDirectedTreatment.yes)));
+    await Firebase.initializeApp();
+    await MobileAds.instance.initialize();
+
     await GetStorage.init();
 
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
@@ -61,9 +59,20 @@ Future<void> main() async {
         ));
       }
     });
-  }
 
-  runApp(const MyApp());
+    runApp(MyApp());
+  }
+  //else {
+  //   runApp(MaterialApp(
+  //     debugShowCheckedModeBanner: false,
+  //     navigatorObservers: [routeObserver],
+  //     theme: ThemeData(
+  //       fontFamily: GoogleFonts.ptSans().fontFamily,
+  //       primarySwatch: Colors.deepPurple,
+  //     ),
+  //     home: Web(),
+  //   ));
+  // }
 }
 
 class MyApp extends StatelessWidget {
@@ -74,18 +83,17 @@ class MyApp extends StatelessWidget {
       FirebaseAnalyticsObserver(analytics: analytics);
 
   // This widget is the root of your application.
-
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Chiringuito WAStickers',
-      navigatorObservers: [observer, routeObserver],
+      navigatorObservers: [observer],
       theme: ThemeData(
         fontFamily: GoogleFonts.ptSans().fontFamily,
         primarySwatch: Colors.lightBlue,
       ),
-      darkTheme: kIsWeb ? null : ThemeData.dark(),
+      darkTheme: ThemeData.dark(),
       home: Home(),
     );
   }
