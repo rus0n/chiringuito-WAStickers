@@ -1,5 +1,4 @@
 import 'package:chiringuito/screens/home.dart';
-import 'package:chiringuito/web.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -12,8 +11,6 @@ import 'package:get_storage/get_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
-import 'web.dart';
-import 'package:seo_renderer/seo_renderer.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 
@@ -30,48 +27,40 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   //inicializamos dependencias
 
-  await Firebase.initializeApp();
-  // await FirebaseAppCheck.instance.activate(
-  //     webRecaptchaSiteKey: "6Lc6DPcdAAAAANNKAykGIeGcl9MLsx0k50Vfbi-q");
-
-  //FirebaseAppCheck.instance.setTokenAutoRefreshEnabled(true);
+  //await FirebaseAppCheck.instance.activate(
+  //    webRecaptchaSiteKey: "6Lc6DPcdAAAAANNKAykGIeGcl9MLsx0k50Vfbi-q");
 
   if (!kIsWeb) {
-    MobileAds.instance.initialize();
-    MobileAds.instance.updateRequestConfiguration((RequestConfiguration(
-        testDeviceIds: ["2BFA3503083AEAC9D69808A74FE955AF"],
-        tagForUnderAgeOfConsent: TagForChildDirectedTreatment.yes)));
+    await Firebase.initializeApp();
+    await MobileAds.instance.initialize();
+
     await GetStorage.init();
+
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+    flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+    await configurarLocalTimeZone();
+    AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings('splash');
+    final settings =
+        InitializationSettings(android: initializationSettingsAndroid);
+    flutterLocalNotificationsPlugin.initialize(settings,
+        onSelectNotification: (String? payload) async {
+      if (payload != null && payload == 'dialog') {
+        debugPrint('payload: ' + payload);
+
+        Get.dialog(SimpleDialog(
+          title: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Text('Nuevos stickers Disponibles'),
+          ),
+        ));
+      }
+    });
+
+    runApp(MyApp());
   }
-
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
-  String? token = await FirebaseMessaging.instance.getToken();
-
-  print(token);
-
-  flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-
-  await configurarLocalTimeZone();
-  AndroidInitializationSettings initializationSettingsAndroid =
-      AndroidInitializationSettings('splash');
-  final settings =
-      InitializationSettings(android: initializationSettingsAndroid);
-  flutterLocalNotificationsPlugin.initialize(settings,
-      onSelectNotification: (String? payload) async {
-    if (payload != null && payload == 'dialog') {
-      debugPrint('payload: ' + payload);
-
-      Get.dialog(SimpleDialog(
-        title: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Text('Nuevos stickers Disponibles'),
-        ),
-      ));
-    }
-  });
-
-  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -87,13 +76,13 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Chiringuito WAStickers',
-      navigatorObservers: [observer, routeObserver],
+      navigatorObservers: [observer],
       theme: ThemeData(
         fontFamily: GoogleFonts.ptSans().fontFamily,
         primarySwatch: Colors.lightBlue,
       ),
-      darkTheme: kIsWeb ? null : ThemeData.dark(),
-      home: kIsWeb ? Web() : Home(),
+      darkTheme: ThemeData.dark(),
+      home: Home(),
     );
   }
 }
