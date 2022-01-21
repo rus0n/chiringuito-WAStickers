@@ -5,12 +5,14 @@ import 'package:chiringuito/screens/add.dart';
 import 'package:chiringuito/screens/detalle.dart';
 import 'package:chiringuito/screens/help.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:shimmer/shimmer.dart';
 
 class Home extends StatelessWidget {
+  const Home({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     var h = Get.put(HomeController());
@@ -35,16 +37,19 @@ class Home extends StatelessWidget {
 
     return Obx(() => Scaffold(
           appBar: AppBar(
-            leading: h.seleccionado.isNotEmpty
-                ? Center(
-                    child: Text(
-                      h.seleccionado.length.toString() + '/' + '30',
-                      textAlign: TextAlign.center,
-                    ),
-                  )
-                : null,
-            title: const Text('Chiringuito Stickers'),
+            title: h.seleccionado.isNotEmpty
+                ? Text(
+                    h.seleccionado.length.toString() +
+                        '/' +
+                        '30' +
+                        ' seleccionado',
+                    textAlign: TextAlign.center)
+                : const Text('Chiringuito Stickers'),
             actions: [
+              // IconButton(
+              //     onPressed: () => Get.to(() => Add()), icon: Icon(Icons.add)),
+              IconButton(
+                  onPressed: () => h.compartir(), icon: Icon(Icons.share)),
               IconButton(
                   onPressed: () => Get.to(Help()),
                   icon: const Icon(Icons.help_center))
@@ -81,7 +86,9 @@ class Home extends StatelessWidget {
                             ),
                           )))
               : RefreshIndicator(
-                  onRefresh: () async => h.stickers.refresh(),
+                  onRefresh: () async {
+                    h.stickers.refresh();
+                  },
                   child: GridView.builder(
                       cacheExtent: (h.stickers.length / 5) * 100,
                       padding: const EdgeInsets.all(16.0),
@@ -107,6 +114,7 @@ class Home extends StatelessWidget {
                             } else {
                               h.seleccionado.add(index);
                             }
+                            print(h.stickers.elementAt(index).id);
 
                             print(h.seleccionado);
                           },
@@ -175,23 +183,25 @@ class Home extends StatelessWidget {
                         );
                       }),
                 ),
-          bottomSheet: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                  alignment: Alignment.center,
-                  width: h.myBanner.size.width.toDouble(),
-                  height: h.myBanner.size.height.toDouble(),
-                  child: AdWidget(ad: h.myBanner))
-            ],
-          ),
+          bottomSheet: h.load.value
+              ? Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                        alignment: Alignment.center,
+                        width: h.myBanner.size.width.toDouble(),
+                        height: h.myBanner.size.height.toDouble(),
+                        child: AdWidget(ad: h.myBanner))
+                  ],
+                )
+              : Container(),
           floatingActionButton: h.seleccionado.length < 3
               ? Padding(
                   padding: const EdgeInsets.only(bottom: 50),
                   child: FloatingActionButton.extended(
                       onPressed: () => null,
                       label: Text(
-                          'Selecciona ${3 - h.seleccionado.length} Stickers')),
+                          'Selecciona + ${3 - h.seleccionado.length} Stickers')),
                 )
               : Padding(
                   padding: const EdgeInsets.only(bottom: 50.0),
@@ -201,6 +211,8 @@ class Home extends StatelessWidget {
                       for (var index in h.seleccionado) {
                         _stickers.add(h.stickers.elementAt(index));
                       }
+                      FirebaseAnalytics.instance
+                          .setCurrentScreen(screenName: 'Detalle_Page');
                       Get.to(() => Detalle(stickers: _stickers));
                     },
                     label: Text('Añadir'),

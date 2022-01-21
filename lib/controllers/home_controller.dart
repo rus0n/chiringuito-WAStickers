@@ -1,13 +1,17 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:chiringuito/db/firestore.dart';
 import 'package:chiringuito/models/stickers_model.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share/share.dart';
 
 import '../main.dart';
 
@@ -19,19 +23,34 @@ class HomeController extends GetxController {
 
   var gs = GetStorage();
 
+  var load = false.obs;
+
   final BannerAd myBanner = BannerAd(
     adUnitId: //'ca-app-pub-3940256099942544/6300978111',
         'ca-app-pub-6592025069346248/2775240563',
     size: AdSize.banner,
-    request: const AdRequest(),
-    listener: const BannerAdListener(),
+    request: const AdRequest(keywords: [
+      'futbol',
+      'chiringuito de jugones',
+      'alfredo duro',
+      'cristobal soria',
+      'deporte',
+      'pedrerol',
+      'twitter'
+    ]),
+    listener: BannerAdListener(
+      onAdFailedToLoad: (ad, error) => print(error.message),
+    ),
   );
 
   Future<void> onInit() async {
     gs.writeIfNull('favoritos', jsonEncode(['']));
     favoritos.value = jsonDecode(gs.read('favoritos'));
     stickers.bindStream(stickerStream());
-    myBanner.load();
+
+    await myBanner.load();
+
+    load.value = true;
 
     // Notificaciones
     late AndroidNotificationChannel channel;
@@ -85,6 +104,22 @@ class HomeController extends GetxController {
   addFavoritos(String id) {
     favoritos.add(id);
     gs.write('favoritos', jsonEncode(favoritos));
+  }
+
+  Future<void> compartir() async {
+    final file =
+        File('${(await getTemporaryDirectory()).path}/splashscreen.png');
+    if (!await file.exists()) {
+      final byteData = await rootBundle.load('images/splashscreen.png');
+
+      await file.writeAsBytes(byteData.buffer
+          .asUint8List(byteData.offsetInBytes, byteData.lengthInBytes));
+    }
+
+    await Share.shareFiles([file.path],
+        text:
+            'Descargate ya la nueva aplicacion para tener los mejores packs de stickers del chiringuito https://play.google.com/store/apps/details?id=com.ruson.chiringuito',
+        subject: 'Chiringuito Stickers');
   }
 
   Stream<List<Sticker>> stickerStream() {
