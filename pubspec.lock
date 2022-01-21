@@ -492,8 +492,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "4.2.4"
-<<<<<<< HEAD
-=======
   share:
     dependency: "direct main"
     description:
@@ -501,7 +499,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.4"
->>>>>>> ec432665d120c8689a9bcfde12938f3348a73cde
   shimmer:
     dependency: "direct main"
     description:
