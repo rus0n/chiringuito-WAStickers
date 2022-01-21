@@ -11,7 +11,6 @@ import 'package:get_storage/get_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:seo_renderer/seo_renderer.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 
@@ -62,17 +61,6 @@ Future<void> main() async {
 
     runApp(MyApp());
   }
-  //else {
-  //   runApp(MaterialApp(
-  //     debugShowCheckedModeBanner: false,
-  //     navigatorObservers: [routeObserver],
-  //     theme: ThemeData(
-  //       fontFamily: GoogleFonts.ptSans().fontFamily,
-  //       primarySwatch: Colors.deepPurple,
-  //     ),
-  //     home: Web(),
-  //   ));
-  // }
 }
 
 class MyApp extends StatelessWidget {
