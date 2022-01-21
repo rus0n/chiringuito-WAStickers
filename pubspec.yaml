@@ -49,7 +49,6 @@ dependencies:
   google_fonts: ^2.2.0
   carousel_slider: ^4.0.0
   shimmer: ^2.0.0
-  seo_renderer: ^0.3.0
   flutter_local_notifications: ^9.2.0
   firebase_messaging: ^11.2.5
   timezone: ^0.8.0
