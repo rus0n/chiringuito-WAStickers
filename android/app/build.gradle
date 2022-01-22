@@ -91,4 +91,6 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'com.google.firebase:firebase-appcheck-debug:16.0.0-beta04'
     implementation 'com.google.firebase:firebase-appcheck-safetynet:'
+    implementation 'com.adcolony:sdk:4.6.5'
+    implementation 'com.google.android.gms:play-services-ads-identifier:18.0.1'
 }

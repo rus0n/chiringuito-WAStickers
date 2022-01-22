@@ -5,14 +5,21 @@ class Sticker {
   String? imageUrl;
   List<String>? emojis;
   int likes = 0;
+  bool animado = false;
 
-  Sticker({required this.id, this.imageUrl, this.emojis, required this.likes});
+  Sticker(
+      {required this.id,
+      this.imageUrl,
+      this.emojis,
+      required this.likes,
+      required this.animado});
 
   factory Sticker.fromFireStore(DocumentSnapshot snap) {
     return Sticker(
         id: snap.id,
         imageUrl: snap.get('imageUrl'),
         emojis: ['🙃'], //snap.get('emojis'),
-        likes: snap.get('likes'));
+        likes: snap.get('likes'),
+        animado: snap.get('animado'));
   }
 }

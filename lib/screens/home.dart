@@ -46,8 +46,8 @@ class Home extends StatelessWidget {
                     textAlign: TextAlign.center)
                 : const Text('Chiringuito Stickers'),
             actions: [
-              // IconButton(
-              //     onPressed: () => Get.to(() => Add()), icon: Icon(Icons.add)),
+              IconButton(
+                  onPressed: () => Get.to(() => Add()), icon: Icon(Icons.add)),
               IconButton(
                   onPressed: () => h.compartir(), icon: Icon(Icons.share)),
               IconButton(

@@ -1,7 +1,9 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:chiringuito/controllers/home_controller.dart';
 import 'package:chiringuito/db/firestore.dart';
+import 'package:chiringuito/models/stickers_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -33,45 +35,79 @@ class _AddState extends State<Add> {
 
   @override
   Widget build(BuildContext context) {
+    bool animado = false;
     return Scaffold(
       appBar: AppBar(
         title: Text('Añadir sticker'),
+        actions: [
+          Switch(
+              onChanged: (value) {
+                setState(() {
+                  animado = value;
+                });
+              },
+              value: animado)
+        ],
       ),
       body: Center(
-        child: ElevatedButton(
-            onPressed: () async {
-              List<XFile>? xfile = await ImagePicker().pickMultiImage();
-              var progress = 0.obs;
+        child: Column(
+          children: [
+            ElevatedButton(
+                onPressed: () async {
+                  List<XFile>? xfile = await ImagePicker().pickMultiImage();
+                  var progress = 0.obs;
 
-              Get.dialog(AlertDialog(
-                  title: CircularProgressIndicator(
-                value: (progress.value / xfile!.length),
-              )));
+                  Get.dialog(AlertDialog(
+                      title: CircularProgressIndicator(
+                    value: (progress.value / xfile!.length),
+                  )));
 
-              for (var xfile in xfile) {
-                String reference = Db().stickers().doc().id;
+                  for (var xfile in xfile) {
+                    String reference = Db().stickers().doc().id;
 
-                File file = File(xfile.path);
+                    File file;
 
-                file = await testCompressAndGetFile(file, file.path + '.webp');
+                    if (animado) {
+                      file = File(xfile.path + 'webp');
+                    }
+                    file = File(xfile.path);
 
-                await FirebaseStorage.instance.ref(reference).putFile(file);
-                await FirebaseStorage.instance
-                    .ref(reference)
-                    .updateMetadata(SettableMetadata(contentType: '.webp'));
+                    file =
+                        await testCompressAndGetFile(file, file.path + '.webp');
 
-                await Db().stickers().doc(reference).set({
-                  'imageUrl': await FirebaseStorage.instance
-                      .ref(reference)
-                      .getDownloadURL(),
-                  'emojis': [],
-                  'likes': 0
-                });
-                progress.value++;
-              }
-              Get.back();
-            },
-            child: Text('AÑadir sticker')),
+                    await FirebaseStorage.instance.ref(reference).putFile(file);
+                    await FirebaseStorage.instance
+                        .ref(reference)
+                        .updateMetadata(SettableMetadata(contentType: '.webp'));
+
+                    await Db().stickers().doc(reference).set({
+                      'imageUrl': await FirebaseStorage.instance
+                          .ref(reference)
+                          .getDownloadURL(),
+                      'emojis': [],
+                      'likes': 0,
+                      'animado': animado
+                    });
+
+                    progress.value++;
+                  }
+                  Get.back();
+                },
+                child: Text('AÑadir sticker')),
+            ElevatedButton(
+                onPressed: () {
+                  print('push');
+                  List<Sticker> stickers = Get.put(HomeController()).stickers;
+                  print(stickers.length);
+                  for (var sticker in stickers) {
+                    Db().stickers().doc(sticker.id).update({'animado': false});
+                    Future.delayed(Duration(seconds: 1));
+                    print(sticker.id);
+                  }
+                },
+                child: Text('Actuailizar todo'))
+          ],
+        ),
       ),
     );
   }
