@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:chiringuito/db/firestore.dart';
 import 'package:chiringuito/models/stickers_model.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -25,30 +26,12 @@ class HomeController extends GetxController {
 
   var load = false.obs;
 
-  final BannerAd myBanner = BannerAd(
-    adUnitId: //'ca-app-pub-3940256099942544/6300978111',
-        'ca-app-pub-6592025069346248/2775240563',
-    size: AdSize.banner,
-    request: const AdRequest(keywords: [
-      'futbol',
-      'chiringuito de jugones',
-      'alfredo duro',
-      'cristobal soria',
-      'deporte',
-      'pedrerol',
-      'twitter'
-    ]),
-    listener: BannerAdListener(
-      onAdFailedToLoad: (ad, error) => print(error.message),
-    ),
-  );
+  Rxn<UserCredential> user = Rxn();
 
   Future<void> onInit() async {
     gs.writeIfNull('favoritos', jsonEncode(['']));
     favoritos.value = jsonDecode(gs.read('favoritos'));
     stickers.bindStream(stickerStream());
-
-    await myBanner.load();
 
     load.value = true;
 
@@ -98,6 +81,8 @@ class HomeController extends GetxController {
         ],
       ));
     });
+    user.value = await FirebaseAuth.instance.signInAnonymously();
+    print(user.value!.user!.uid);
     super.onInit();
   }
 
@@ -126,6 +111,7 @@ class HomeController extends GetxController {
     return Db()
         .stickers()
         .orderBy('likes', descending: true)
+        .orderBy('creado')
         .snapshots()
         .map((event) {
       if (event.docs.isNotEmpty) {

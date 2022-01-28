@@ -1,3 +1,4 @@
+import 'package:chiringuito/bottom_navigator.dart';
 import 'package:chiringuito/screens/home.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -83,7 +84,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.lightBlue,
       ),
       darkTheme: ThemeData.dark(),
-      home: Home(),
+      home: BottomNavigator(),
     );
   }
 }

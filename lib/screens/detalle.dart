@@ -35,17 +35,6 @@ class Detalle extends StatelessWidget {
     return Scaffold(
         appBar: AppBar(
           title: Text('Stickers Seleccionados'),
-          actions: [
-            IconButton(
-                onPressed: () => Get.dialog(SimpleDialog(
-                      title: Text('Informacion'),
-                      children: [
-                        Text(
-                            'Si se necesita instalar un nuevo paquete ya que sobrepasa los 30 stickers, se hace de forma automatica. Si no se actualizará el paquete actual.')
-                      ],
-                    )),
-                icon: Icon(Icons.info))
-          ],
         ),
         body: GridView.builder(
             padding: const EdgeInsets.all(16.0),
@@ -94,7 +83,7 @@ class Detalle extends StatelessWidget {
                 style: ButtonStyle(
                     backgroundColor: MaterialStateColor.resolveWith(
                         (states) => Color.fromRGBO(7, 94, 84, 1))),
-                onPressed: () => d.createLocalFile(stickers),
+                onPressed: () => d.addPack(stickers),
                 child: Text('Añadir a WhatsApp'))
           ],
         ));

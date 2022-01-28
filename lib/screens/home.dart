@@ -1,7 +1,11 @@
+import 'dart:math';
+import 'dart:ui';
+
 import 'package:chiringuito/controllers/home_controller.dart';
 import 'package:chiringuito/db/firestore.dart';
 import 'package:chiringuito/models/stickers_model.dart';
 import 'package:chiringuito/screens/add.dart';
+import 'package:chiringuito/screens/comments.dart';
 import 'package:chiringuito/screens/detalle.dart';
 import 'package:chiringuito/screens/help.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -16,6 +20,45 @@ class Home extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var h = Get.put(HomeController());
+
+    Map<String, BannerAd> ads = <String, BannerAd>{};
+
+    for (var i = 0; i < (h.stickers.length); i++) {
+      if (i % 4 == 0) {
+        ads['myBanner$i'] = BannerAd(
+          adUnitId: 'ca-app-pub-6592025069346248/2775240563',
+          size: AdSize.banner,
+          request: AdRequest(
+            keywords: [
+              'eventos deportivos',
+              'ver futbol',
+              'futbol tv',
+              'dazn f1',
+              'nba',
+              'nba hoy',
+              'liga smartbank',
+              'liga santander',
+              'universidad online',
+              'miss padel',
+              'les corts futbol sala',
+              'champions league',
+              'futbol',
+              'chiringuito de jugones',
+              'alfredo duro',
+              'cristobal soria',
+              'deporte',
+              'pedrerol',
+              'twitter'
+            ],
+          ),
+          listener: BannerAdListener(
+              onAdLoaded: (ad) => print('$ad Cargado'),
+              onAdClosed: (ad) => ad.dispose()),
+        );
+
+        ads['myBanner$i']!.load();
+      }
+    }
 
     Future<void> likesAdd(Sticker _sticker) async {
       await FirebaseFirestore.instance.runTransaction((transaction) async {
@@ -47,8 +90,6 @@ class Home extends StatelessWidget {
                 : const Text('Chiringuito Stickers'),
             actions: [
               IconButton(
-                  onPressed: () => Get.to(() => Add()), icon: Icon(Icons.add)),
-              IconButton(
                   onPressed: () => h.compartir(), icon: Icon(Icons.share)),
               IconButton(
                   onPressed: () => Get.to(Help()),
@@ -62,13 +103,8 @@ class Home extends StatelessWidget {
                     Theme.of(context).primaryColor,
                     Colors.white54
                   ]),
-                  child: GridView.builder(
+                  child: ListView.builder(
                       padding: EdgeInsets.all(16),
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        childAspectRatio: 8 / 9,
-                      ),
                       itemCount: 30,
                       itemBuilder: (_, index) => Card(
                             child: Column(
@@ -78,6 +114,7 @@ class Home extends StatelessWidget {
                                 Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: Container(
+                                      height: 200,
                                       decoration: BoxDecoration(
                                           borderRadius: BorderRadius.all(
                                               Radius.circular(8)))),
@@ -85,139 +122,145 @@ class Home extends StatelessWidget {
                               ],
                             ),
                           )))
-              : RefreshIndicator(
-                  onRefresh: () async {
-                    h.stickers.refresh();
-                  },
-                  child: GridView.builder(
-                      cacheExtent: (h.stickers.length / 5) * 100,
-                      padding: const EdgeInsets.all(16.0),
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        childAspectRatio: 8.0 / 9.0,
-                      ),
-                      itemCount: h.stickers.length,
+              : SizedBox(
+                  height: Get.size.height,
+                  width: Get.size.width,
+                  child: ListView.separated(
+                      padding: EdgeInsets.all(8),
                       itemBuilder: (_, index) {
                         Sticker _sticker = h.stickers.elementAt(index);
                         return GestureDetector(
-                          onTap: () {
-                            bool _select = false;
-                            h.seleccionado.forEach((element) {
-                              if (element == index) {
-                                _select = true;
-                              }
-                            });
-                            print(_select);
-                            if (_select && h.seleccionado.isNotEmpty) {
-                              h.seleccionado.remove(index);
-                            } else {
-                              h.seleccionado.add(index);
-                            }
-                            print(h.stickers.elementAt(index).id);
+                            onTap: () {
+                              if (h.seleccionado.length < 30) {
+                                bool _select = false;
+                                h.seleccionado.forEach((element) {
+                                  if (element == index) {
+                                    _select = true;
+                                  }
+                                });
+                                print(_select);
+                                if (_select && h.seleccionado.isNotEmpty) {
+                                  h.seleccionado.remove(index);
+                                } else {
+                                  h.seleccionado.add(index);
+                                }
+                                print(h.stickers.elementAt(index).id);
 
-                            print(h.seleccionado);
-                          },
-                          child: Card(
-                            clipBehavior: Clip.antiAlias,
-                            color: (h.seleccionado.contains(index) &&
-                                    h.seleccionado.isNotEmpty)
-                                ? Colors.lightBlueAccent
-                                : null,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.max,
-                              children: [
-                                Expanded(
-                                  child: AspectRatio(
-                                    aspectRatio: 16 / 11,
-                                    child: Image.network(
-                                      _sticker.imageUrl!,
-                                      errorBuilder:
-                                          (context, error, stackTrace) =>
-                                              Center(
-                                        child: Text('No se puede actualizar'),
+                                print(h.seleccionado);
+                              }
+                            },
+                            child: Card(
+                              elevation: 3,
+                              clipBehavior: Clip.antiAlias,
+                              color: (h.seleccionado.contains(index) &&
+                                      h.seleccionado.isNotEmpty)
+                                  ? Colors.lightBlueAccent
+                                  : null,
+                              child: SizedBox(
+                                height: 170,
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  mainAxisSize: MainAxisSize.max,
+                                  children: [
+                                    Padding(
+                                      padding: EdgeInsets.only(
+                                          left: (Get.size.width / 3.4),
+                                          bottom: 8,
+                                          top: 8),
+                                      child: Image.network(
+                                        _sticker.imageUrl!,
+                                        errorBuilder:
+                                            (context, error, stackTrace) =>
+                                                Center(
+                                          child: Text('No se puede actualizar'),
+                                        ),
+                                        loadingBuilder:
+                                            (_, child, loadingProgress) {
+                                          if (loadingProgress == null)
+                                            return child;
+                                          return Center(
+                                            child: CircularProgressIndicator(
+                                              value: loadingProgress
+                                                          .expectedTotalBytes !=
+                                                      null
+                                                  ? loadingProgress
+                                                          .cumulativeBytesLoaded /
+                                                      loadingProgress
+                                                          .expectedTotalBytes!
+                                                  : null,
+                                            ),
+                                          );
+                                        },
                                       ),
-                                      loadingBuilder:
-                                          (_, child, loadingProgress) {
-                                        if (loadingProgress == null)
-                                          return child;
-                                        return Center(
-                                          child: CircularProgressIndicator(
-                                            value: loadingProgress
-                                                        .expectedTotalBytes !=
-                                                    null
-                                                ? loadingProgress
-                                                        .cumulativeBytesLoaded /
-                                                    loadingProgress
-                                                        .expectedTotalBytes!
-                                                : null,
-                                          ),
-                                        );
-                                      },
                                     ),
-                                  ),
+                                    Spacer(),
+                                    Padding(
+                                      padding: const EdgeInsets.all(10.0),
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceEvenly,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          IconButton(
+                                              onPressed: () =>
+                                                  likesAdd(_sticker),
+                                              icon: h.favoritos
+                                                      .contains(_sticker.id)
+                                                  ? Icon(Icons.favorite,
+                                                      color: Colors.blueAccent)
+                                                  : Icon(
+                                                      Icons.favorite_border)),
+                                          Text('${_sticker.likes}'),
+                                          IconButton(
+                                              onPressed: () =>
+                                                  Get.to(() => Comments(
+                                                        id: _sticker.id,
+                                                      )),
+                                              icon: Icon(
+                                                  Icons.add_comment_outlined)),
+                                          Text('${_sticker.comments}')
+                                        ],
+                                      ),
+                                    ),
+                                    SizedBox(height: 10)
+                                  ],
                                 ),
-                                Padding(
-                                  padding: const EdgeInsets.fromLTRB(
-                                      16.0, 8.0, 16.0, 0),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceAround,
-                                    children: [
-                                      IconButton(
-                                          onPressed: () => likesAdd(_sticker),
-                                          icon: h.favoritos
-                                                  .contains(_sticker.id)
-                                              ? Icon(Icons.favorite,
-                                                  color: Colors.blueAccent)
-                                              : Icon(Icons.favorite_border)),
-                                      Text(_sticker.likes.toString() +
-                                          '  Me gusta')
-                                    ],
-                                  ),
-                                )
-                              ],
-                            ),
-                          ),
-                        );
-                      }),
+                              ),
+                            ));
+                      },
+                      separatorBuilder: (_, index) {
+                        if ((index % 4 == 0) && ads['myBanner$index'] != null) {
+                          return Container(
+                              alignment: Alignment.center,
+                              width:
+                                  ads['myBanner$index']!.size.width.toDouble(),
+                              height:
+                                  ads['myBanner$index']!.size.height.toDouble(),
+                              child: AdWidget(ad: ads['myBanner$index']!));
+                        }
+                        return Container();
+                      },
+                      itemCount: h.stickers.length),
                 ),
-          bottomSheet: h.load.value
-              ? Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                        alignment: Alignment.center,
-                        width: h.myBanner.size.width.toDouble(),
-                        height: h.myBanner.size.height.toDouble(),
-                        child: AdWidget(ad: h.myBanner))
-                  ],
-                )
-              : Container(),
           floatingActionButton: h.seleccionado.length < 3
-              ? Padding(
-                  padding: const EdgeInsets.only(bottom: 50),
-                  child: FloatingActionButton.extended(
-                      onPressed: () => null,
-                      label: Text(
-                          'Selecciona + ${3 - h.seleccionado.length} Stickers')),
-                )
-              : Padding(
-                  padding: const EdgeInsets.only(bottom: 50.0),
-                  child: FloatingActionButton.extended(
-                    onPressed: () {
-                      List<Sticker> _stickers = [];
-                      for (var index in h.seleccionado) {
-                        _stickers.add(h.stickers.elementAt(index));
-                      }
-                      FirebaseAnalytics.instance
-                          .setCurrentScreen(screenName: 'Detalle_Page');
-                      Get.to(() => Detalle(stickers: _stickers));
-                    },
-                    label: Text('Añadir'),
-                    icon: Icon(Icons.add),
-                  ),
+              ? FloatingActionButton.extended(
+                  onPressed: () => null,
+                  label: Text(
+                      'Selecciona + ${3 - h.seleccionado.length} Stickers'))
+              : FloatingActionButton.extended(
+                  onPressed: () {
+                    List<Sticker> _stickers = [];
+                    for (var index in h.seleccionado) {
+                      _stickers.add(h.stickers.elementAt(index));
+                    }
+                    FirebaseAnalytics.instance
+                        .setCurrentScreen(screenName: 'Detalle_Page');
+                    Get.to(() => Detalle(stickers: _stickers));
+                  },
+                  label: Text('Añadir'),
+                  icon: Icon(Icons.add),
                 ),
         ));
   }

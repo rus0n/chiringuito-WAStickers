@@ -12,10 +12,10 @@
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon"
         android:requestLegacyExternalStorage="true">
+        <meta-data android:name="NonAssetContentProvider" android:value="true" />
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-6592025069346248~4181489876"/>
-        <meta-data android:name="NonAssetContentProvider" android:value="true" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

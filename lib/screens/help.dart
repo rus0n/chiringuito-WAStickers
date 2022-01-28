@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class Help extends StatefulWidget {
   Help({Key? key}) : super(key: key);
@@ -32,6 +33,9 @@ class _HelpState extends State<Help> {
                       .collection('feedback')
                       .doc()
                       .set({'mensaje': _controller.text});
+                  _controller.clear();
+                  Get.snackbar('Enviado!',
+                      'Gracias por tu mensaje, nos inspiraremos en ello');
                 }
               },
               icon: const Icon(Icons.send),
