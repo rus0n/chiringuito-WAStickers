@@ -31,11 +31,7 @@ Future<void> main() async {
   //    webRecaptchaSiteKey: "6Lc6DPcdAAAAANNKAykGIeGcl9MLsx0k50Vfbi-q");
 
   await Firebase.initializeApp();
-  await MobileAds.instance
-      .initialize()
-      .then((value) => value.adapterStatuses.forEach((key, value) {
-            debugPrint('$key : ${value.description}');
-          }));
+  await MobileAds.instance.initialize();
 
   await GetStorage.init();
 

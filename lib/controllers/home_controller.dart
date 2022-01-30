@@ -24,16 +24,14 @@ class HomeController extends GetxController {
 
   var gs = GetStorage();
 
-  var load = false.obs;
-
   Rxn<UserCredential> user = Rxn();
+
+  var ads = <String, BannerAd>{}.obs;
 
   Future<void> onInit() async {
     gs.writeIfNull('favoritos', jsonEncode(['']));
     favoritos.value = jsonDecode(gs.read('favoritos'));
     stickers.bindStream(stickerStream());
-
-    load.value = true;
 
     // Notificaciones
     late AndroidNotificationChannel channel;
@@ -83,12 +81,58 @@ class HomeController extends GetxController {
     });
     user.value = await FirebaseAuth.instance.signInAnonymously();
     print(user.value!.user!.uid);
+
+    once(stickers, (_) => loadAds());
+
     super.onInit();
   }
 
   addFavoritos(String id) {
     favoritos.add(id);
     gs.write('favoritos', jsonEncode(favoritos));
+  }
+
+  loadAds() {
+    for (var i = 0; i < (stickers.length); i++) {
+      if (i % 4 == 0) {
+        print('ad');
+        ads['myBanner$i'] = BannerAd(
+          adUnitId: 'ca-app-pub-6592025069346248/2775240563',
+          size: AdSize.banner,
+          request: AdRequest(
+            keywords: [
+              'eventos deportivos',
+              'ver futbol',
+              'futbol tv',
+              'dazn f1',
+              'nba',
+              'nba hoy',
+              'liga smartbank',
+              'liga santander',
+              'universidad online',
+              'miss padel',
+              'les corts futbol sala',
+              'champions league',
+              'futbol',
+              'chiringuito de jugones',
+              'alfredo duro',
+              'cristobal soria',
+              'deporte',
+              'pedrerol',
+              'twitter'
+            ],
+          ),
+          listener: BannerAdListener(
+              onAdClosed: (ad) => ad.dispose(),
+              onAdFailedToLoad: (ad, error) => print(error.message),
+              onAdLoaded: (ad) {
+                print('Cargado');
+              }),
+        );
+
+        ads['myBanner$i']!.load();
+      }
+    }
   }
 
   Future<void> compartir() async {

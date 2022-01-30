@@ -21,43 +21,6 @@ class Home extends StatelessWidget {
   Widget build(BuildContext context) {
     var h = Get.put(HomeController());
 
-    Map<String, BannerAd> ads = <String, BannerAd>{};
-
-    for (var i = 0; i < (h.stickers.length); i++) {
-      if (i % 4 == 0) {
-        ads['myBanner$i'] = BannerAd(
-          adUnitId: 'ca-app-pub-6592025069346248/2775240563',
-          size: AdSize.banner,
-          request: AdRequest(
-            keywords: [
-              'eventos deportivos',
-              'ver futbol',
-              'futbol tv',
-              'dazn f1',
-              'nba',
-              'nba hoy',
-              'liga smartbank',
-              'liga santander',
-              'universidad online',
-              'miss padel',
-              'les corts futbol sala',
-              'champions league',
-              'futbol',
-              'chiringuito de jugones',
-              'alfredo duro',
-              'cristobal soria',
-              'deporte',
-              'pedrerol',
-              'twitter'
-            ],
-          ),
-          listener: BannerAdListener(onAdClosed: (ad) => ad.dispose()),
-        );
-
-        ads['myBanner$i']!.load();
-      }
-    }
-
     Future<void> likesAdd(Sticker _sticker) async {
       await FirebaseFirestore.instance.runTransaction((transaction) async {
         DocumentReference _likesReference = Db().stickers().doc(_sticker.id);
@@ -130,7 +93,7 @@ class Home extends StatelessWidget {
                         Sticker _sticker = h.stickers.elementAt(index);
                         return GestureDetector(
                             onTap: () {
-                              if (h.seleccionado.length < 30) {
+                              if (h.seleccionado.length <= 30) {
                                 bool _select = false;
                                 h.seleccionado.forEach((element) {
                                   if (element == index) {
@@ -138,7 +101,8 @@ class Home extends StatelessWidget {
                                   }
                                 });
                                 print(_select);
-                                if (_select && h.seleccionado.isNotEmpty) {
+                                if (_select && h.seleccionado.isNotEmpty ||
+                                    h.seleccionado.length == 30) {
                                   h.seleccionado.remove(index);
                                 } else {
                                   h.seleccionado.add(index);
@@ -230,14 +194,14 @@ class Home extends StatelessWidget {
                             ));
                       },
                       separatorBuilder: (_, index) {
-                        if ((index % 4 == 0) && ads['myBanner$index'] != null) {
+                        if ((index % 4 == 0)) {
                           return Container(
                               alignment: Alignment.center,
-                              width:
-                                  ads['myBanner$index']!.size.width.toDouble(),
-                              height:
-                                  ads['myBanner$index']!.size.height.toDouble(),
-                              child: AdWidget(ad: ads['myBanner$index']!));
+                              width: h.ads['myBanner$index']!.size.width
+                                  .toDouble(),
+                              height: h.ads['myBanner$index']!.size.height
+                                  .toDouble(),
+                              child: AdWidget(ad: h.ads['myBanner$index']!));
                         }
                         return Container();
                       },

@@ -32,7 +32,7 @@ class Detalle extends StatelessWidget {
       });
     }
 
-    return Scaffold(
+    return Obx(() => Scaffold(
         appBar: AppBar(
           title: Text('Stickers Seleccionados'),
         ),
@@ -83,9 +83,18 @@ class Detalle extends StatelessWidget {
                 style: ButtonStyle(
                     backgroundColor: MaterialStateColor.resolveWith(
                         (states) => Color.fromRGBO(7, 94, 84, 1))),
-                onPressed: () => d.addPack(stickers),
-                child: Text('Añadir a WhatsApp'))
+                onPressed: () => d.createLocalFile(stickers),
+                child: d.load.value
+                    ? Text('Añadir a WhatsApp')
+                    : SizedBox(
+                        height: 60,
+                        width: 60,
+                        child: Center(
+                            child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: CircularProgressIndicator(),
+                        ))))
           ],
-        ));
+        )));
   }
 }
