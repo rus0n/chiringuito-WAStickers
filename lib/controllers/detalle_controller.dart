@@ -6,6 +6,7 @@ import 'package:chiringuito/models/stickers_model.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:flutter_whatsapp_stickers/flutter_whatsapp_stickers.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -23,11 +24,9 @@ class DetalleController extends GetxController {
   void onInit() {
     super.onInit();
     loadAd();
-    prepareDirectory();
-    gs.writeIfNull('pack', 1);
-    id = gs.read('pack');
-    checkInstallStatus();
     checkWhatsapp();
+    prepareDirectory();
+    checkInstallStatus();
   }
 
   String _platformVersion = 'Unknown';
@@ -56,7 +55,7 @@ class DetalleController extends GetxController {
     _whatsAppConsumerAppInstalled = whatsAppConsumerAppInstalled;
     _whatsAppSmbAppInstalled = whatsAppSmbAppInstalled;
 
-    print(_platformVersion);
+    print('plataforma $_platformVersion');
     print(_whatsAppInstalled);
     print(_whatsAppConsumerAppInstalled);
     print(_whatsAppSmbAppInstalled);
@@ -66,8 +65,8 @@ class DetalleController extends GetxController {
     return {
       "identifier": "$id",
       "name": "Chiringuito-Stickers-$id",
-      "publisher": "Chiringuitostickers App",
-      "tray_image_file": "tray-icon.png",
+      "publisher": "Chiringuito stickers App",
+      "tray_image_file": "tray_icon.png",
       "image_data_version": "1",
       "avoid_cache": false,
       "publisher_email": "",
@@ -94,8 +93,6 @@ class DetalleController extends GetxController {
   Map<String, dynamic>? _stickerPacksConfig;
   List<dynamic>? _storedStickerPacks;
 
-  bool packInstalled = false;
-
   prepareDirectory() async {
     _applicationDirectory = await getApplicationDocumentsDirectory();
     //Creamos las carpeta necesaria
@@ -103,7 +100,6 @@ class DetalleController extends GetxController {
         Directory("${_applicationDirectory?.path}/sticker_packs");
     _stickerPacksConfigFile =
         File("${_stickerPacksDirectory?.path}/sticker_packs.json");
-    _stickerPacksConfigFile!.deleteSync();
 
     //Creamos el archivo de configuracion si no existe
     if (!await _stickerPacksConfigFile!.exists()) {
@@ -125,33 +121,33 @@ class DetalleController extends GetxController {
   }
 
   checkInstallStatus() async {
-    packInstalled = await _waStickers.isStickerPackInstalled(id.toString());
+    bool packInstalled =
+        await _waStickers.isStickerPackInstalled(id.toString());
+    print('paquete instalado: $packInstalled');
     if (packInstalled) {
       id = id++;
     }
   }
 
   Future<bool> downloadSticker(List<Sticker> _stickers) async {
+    // creamos la carpeta donde iran los stickers
     Directory? packageDirectory =
-        Directory('${_stickerPacksDirectory!.path}/' + id.toString())
-          ..createSync(recursive: true);
+        Directory('${_stickerPacksDirectory!.path}/$id')
+          ..create(recursive: true);
 
     for (var _sticker in _stickers) {
-      File file = File(packageDirectory.path + '/' + _sticker.id + '.webp')
-        ..createSync(recursive: true);
+      File file = File('${packageDirectory.path}/${_sticker.id}.webp')
+        ..createSync(recursive: false);
 
       await FirebaseStorage.instance.ref(_sticker.id).writeToFile(file);
-
-      print(file.path);
+      print(file.uri);
     }
 
     //añadimos el tray-image
-    final byteData = await rootBundle.load('images/trayImage.png');
-    List<int> bytes = Uint8List.view(
-        byteData.buffer, byteData.offsetInBytes, byteData.lengthInBytes);
-    File('${packageDirectory.path}/tray-icon.png')
-      ..createSync(recursive: true)
-      ..writeAsBytesSync(bytes);
+    File file = File('${packageDirectory.path}/tray_icon.png')
+      ..createSync(recursive: false);
+
+    await FirebaseStorage.instance.ref('trayImage.png').writeToFile(file);
 
     print(packageDirectory.listSync());
 
@@ -168,9 +164,8 @@ class DetalleController extends GetxController {
     _stickerPacksConfigFile!.deleteSync();
     _stickerPacksConfigFile!.createSync(recursive: true);
     _stickerPacksConfigFile!.writeAsStringSync(contentsOfFile, flush: true);
-
+    print(contentsOfFile);
     print(_stickerPacksConfig);
-    _waStickers.updatedStickerPacks(id.toString());
     return true;
   }
 
@@ -199,6 +194,21 @@ class DetalleController extends GetxController {
           stickerPackName: 'Chiringuito Stickers App',
           listener: _listener);
     }
+
+    _waStickers.updatedStickerPacks(id.toString());
+  }
+
+  Future<File> testCompressAndGetFile(File file, String targetPath) async {
+    var result = await FlutterImageCompress.compressAndGetFile(
+        file.absolute.path, targetPath,
+        quality: 95,
+        minHeight: 512,
+        minWidth: 512,
+        format: CompressFormat.webp);
+    file.delete();
+    print(result!.lengthSync());
+
+    return result;
   }
 
   Future<void> _listener(StickerPackResult action, bool result,

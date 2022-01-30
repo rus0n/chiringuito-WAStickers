@@ -107,7 +107,7 @@ class Comments extends StatelessWidget {
                                         commentsAdd(false);
                                       },
                                       icon: Icon(Icons.delete))
-                                  : Container(),
+                                  : null,
                               subtitle: Text(
                                   snap.data!.docs.elementAt(index).get('user')),
                             );

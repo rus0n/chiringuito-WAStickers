@@ -21,7 +21,7 @@ class Sticker {
     return Sticker(
         id: snap.id,
         imageUrl: snap.get('imageUrl'),
-        emojis: ['🙃', '😊'], //snap.get('emojis'),
+        emojis: ['🙃'], //snap.get('emojis'),
         likes: snap.get('likes'),
         comments: snap.get('comments'),
         animado: snap.get('animado'));

@@ -100,7 +100,7 @@ class Home extends StatelessWidget {
                     Colors.white54,
                     Theme.of(context).primaryColor,
                     Colors.white54
-                  ]),
+                  ], begin: Alignment.bottomLeft, end: Alignment.topRight),
                   child: ListView.builder(
                       padding: EdgeInsets.all(16),
                       itemCount: 30,
