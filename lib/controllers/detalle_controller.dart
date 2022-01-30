@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:chiringuito/models/stickers_model.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -14,8 +15,7 @@ import 'package:path_provider/path_provider.dart';
 class DetalleController extends GetxController {
   GetStorage gs = GetStorage();
 
-  String id = '1';
-  String stickerPackJsonTemp = '';
+  int id = 1;
 
   InterstitialAd? myInterstitialAd;
 
@@ -23,26 +23,54 @@ class DetalleController extends GetxController {
   void onInit() {
     super.onInit();
     loadAd();
-    gs.writeIfNull('pack', '1');
+    prepareDirectory();
+    gs.writeIfNull('pack', 1);
     id = gs.read('pack');
+    checkInstallStatus();
+    checkWhatsapp();
   }
 
-  final Map headJson = {
-    "android_play_store_link":
-        "https://play.google.com/store/apps/details?id=com.ruson.chiringuito",
-    "ios_app_store_link": "",
-    "sticker_packs": []
-  };
+  String _platformVersion = 'Unknown';
+  bool _whatsAppInstalled = false;
+  bool _whatsAppConsumerAppInstalled = false;
+  bool _whatsAppSmbAppInstalled = false;
 
-  Map jsonFilePack(List<Sticker> stickers) {
+  Future<void> checkWhatsapp() async {
+    String platformVersion;
+
+    // Platform messages may fail, so we use a try/catch PlatformException.
+    try {
+      platformVersion = await WhatsAppStickers.platformVersion;
+    } on PlatformException {
+      platformVersion = 'Failed to get platform version.';
+    }
+
+    bool whatsAppInstalled = await WhatsAppStickers.isWhatsAppInstalled;
+    bool whatsAppConsumerAppInstalled =
+        await WhatsAppStickers.isWhatsAppConsumerAppInstalled;
+    bool whatsAppSmbAppInstalled =
+        await WhatsAppStickers.isWhatsAppSmbAppInstalled;
+
+    _platformVersion = platformVersion;
+    _whatsAppInstalled = whatsAppInstalled;
+    _whatsAppConsumerAppInstalled = whatsAppConsumerAppInstalled;
+    _whatsAppSmbAppInstalled = whatsAppSmbAppInstalled;
+
+    print(_platformVersion);
+    print(_whatsAppInstalled);
+    print(_whatsAppConsumerAppInstalled);
+    print(_whatsAppSmbAppInstalled);
+  }
+
+  Map<String, dynamic> jsonFilePack(List<Sticker> stickers) {
     return {
-      "identifier": id,
-      "name": "Chiringuito Stickers $id",
-      "publisher": "Chiringuito stickers",
-      "tray_image_file": "trayImage.png",
+      "identifier": "$id",
+      "name": "Chiringuito-Stickers-$id",
+      "publisher": "Chiringuitostickers App",
+      "tray_image_file": "tray-icon.png",
       "image_data_version": "1",
       "avoid_cache": false,
-      "publisher_email": "devinfojob@gmail.com",
+      "publisher_email": "",
       "publisher_website": "https://chiringuitostickers.com/",
       "privacy_policy_website":
           "https://coronayuda.blogspot.com/p/politica-de-privacidad.html",
@@ -57,69 +85,120 @@ class DetalleController extends GetxController {
     };
   }
 
-  addPack(List<Sticker> stickers) async {
-    showAd();
-    Get.dialog(
-        SimpleDialog(
-          title: Padding(
-            padding: const EdgeInsets.all(14.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: CircularProgressIndicator(),
-                ),
-                Text('Descargando espere...'),
-              ],
-            ),
-          ),
-        ),
-        barrierDismissible: true); //ponerlo a false
-    String dir = (await getApplicationDocumentsDirectory()).path;
-    //Creamos el archivo json
-    Directory stickerPacksDir = Directory('$dir/sticker_packs');
-    if (!await stickerPacksDir.exists()) {
-      stickerPacksDir.create();
-    }
-    //añadimos el pack al archivo json
-    Map jsonFile = headJson;
-    List stickerPacksList = jsonFile['sticker_packs'];
-    stickerPacksList.add(jsonFilePack(stickers));
-    jsonFile['sticker_packs'] = stickerPacksList;
-    print(stickerPacksList);
+  final WhatsAppStickers _waStickers = WhatsAppStickers();
 
-    //guardamos el archivo json
-    File stickerPacksFile = File('${stickerPacksDir.path}/sticker_packs.json');
-    stickerPacksFile.writeAsStringSync(jsonEncode(jsonFile));
+  Directory? _applicationDirectory;
+  Directory? _stickerPacksDirectory;
+  File? _stickerPacksConfigFile;
 
-    //guardamos los stickers desde los servidores
-    Directory packDirectory =
-        Directory('${stickerPacksDir.path}/$id'); //carpeta del id
+  Map<String, dynamic>? _stickerPacksConfig;
+  List<dynamic>? _storedStickerPacks;
 
-    if (!await packDirectory.exists()) {
-      packDirectory.create();
+  bool packInstalled = false;
+
+  prepareDirectory() async {
+    _applicationDirectory = await getApplicationDocumentsDirectory();
+    //Creamos las carpeta necesaria
+    _stickerPacksDirectory =
+        Directory("${_applicationDirectory?.path}/sticker_packs");
+    _stickerPacksConfigFile =
+        File("${_stickerPacksDirectory?.path}/sticker_packs.json");
+    _stickerPacksConfigFile!.deleteSync();
+
+    //Creamos el archivo de configuracion si no existe
+    if (!await _stickerPacksConfigFile!.exists()) {
+      _stickerPacksConfigFile!.createSync(recursive: true);
+      _stickerPacksConfig = {
+        "android_play_store_link": "",
+        "ios_app_store_link": "",
+        "sticker_packs": [],
+      };
+      String contentsOfFile = jsonEncode(_stickerPacksConfig) + "\n";
+      _stickerPacksConfigFile!.writeAsStringSync(contentsOfFile, flush: true);
     }
 
-    for (var sticker in stickers) {
-      File stickerFile = File('${packDirectory.path}/${sticker.id}.webp');
+    //Cargamos los packs de configuracion
 
-      await FirebaseStorage.instance.ref(sticker.id).writeToFile(stickerFile);
-      print(stickerFile.readAsBytes());
+    _stickerPacksConfig =
+        jsonDecode((await _stickerPacksConfigFile!.readAsString()));
+    _storedStickerPacks = _stickerPacksConfig!['sticker_packs'];
+  }
+
+  checkInstallStatus() async {
+    packInstalled = await _waStickers.isStickerPackInstalled(id.toString());
+    if (packInstalled) {
+      id = id++;
+    }
+  }
+
+  Future<bool> downloadSticker(List<Sticker> _stickers) async {
+    Directory? packageDirectory =
+        Directory('${_stickerPacksDirectory!.path}/' + id.toString())
+          ..createSync(recursive: true);
+
+    for (var _sticker in _stickers) {
+      File file = File(packageDirectory.path + '/' + _sticker.id + '.webp')
+        ..createSync(recursive: true);
+
+      await FirebaseStorage.instance.ref(_sticker.id).writeToFile(file);
+
+      print(file.path);
     }
 
+    //añadimos el tray-image
     final byteData = await rootBundle.load('images/trayImage.png');
-    final file = File('${packDirectory.path}/trayImage.png');
-    await file.writeAsBytes(byteData.buffer
-        .asUint8List(byteData.offsetInBytes, byteData.lengthInBytes));
+    List<int> bytes = Uint8List.view(
+        byteData.buffer, byteData.offsetInBytes, byteData.lengthInBytes);
+    File('${packageDirectory.path}/tray-icon.png')
+      ..createSync(recursive: true)
+      ..writeAsBytesSync(bytes);
 
-    print(packDirectory.listSync());
+    print(packageDirectory.listSync());
 
-    //stickerPackJsonTemp = jsonEncode(jsonFile);
-    WhatsAppStickers().addStickerPack(
-        stickerPackIdentifier: id,
-        stickerPackName: "Chringuito Stickers $id",
-        listener: _listener);
+    Map<String, dynamic> packageContentsMap = jsonFilePack(_stickers);
+
+    _storedStickerPacks!.removeWhere(
+        (item) => item['identifier'] == packageContentsMap['identifier']);
+    _storedStickerPacks!.add(packageContentsMap);
+
+    //Añadimos a la configuracion y actualizamos
+    _stickerPacksConfig!['sticker_packs'] = _storedStickerPacks;
+    JsonEncoder encoder = new JsonEncoder.withIndent('  ');
+    String contentsOfFile = encoder.convert(_stickerPacksConfig) + "\n";
+    _stickerPacksConfigFile!.deleteSync();
+    _stickerPacksConfigFile!.createSync(recursive: true);
+    _stickerPacksConfigFile!.writeAsStringSync(contentsOfFile, flush: true);
+
+    print(_stickerPacksConfig);
+    _waStickers.updatedStickerPacks(id.toString());
+    return true;
+  }
+
+  addPack(List<Sticker> _stickers) async {
+    Get.dialog(AlertDialog(
+      title: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: CircularProgressIndicator(),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text('Descargando espere...'),
+          )
+        ],
+      ),
+    ));
+
+    bool sucess = await downloadSticker(_stickers);
+
+    if (sucess) {
+      _waStickers.addStickerPack(
+          stickerPackIdentifier: id.toString(),
+          stickerPackName: 'Chiringuito Stickers App',
+          listener: _listener);
+    }
   }
 
   Future<void> _listener(StickerPackResult action, bool result,
@@ -127,11 +206,9 @@ class DetalleController extends GetxController {
     print(error);
     print(action);
     print(result);
+    Get.back();
     if (action == StickerPackResult.ADD_SUCCESSFUL) {
-      int pack = int.parse(id);
-      pack = pack++;
-      gs.write('pack', pack.toString());
-      gs.write('jsonFile', stickerPackJsonTemp);
+      print('succesful');
     }
   }
 
