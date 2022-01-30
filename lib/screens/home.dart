@@ -51,9 +51,7 @@ class Home extends StatelessWidget {
               'twitter'
             ],
           ),
-          listener: BannerAdListener(
-              onAdLoaded: (ad) => print('$ad Cargado'),
-              onAdClosed: (ad) => ad.dispose()),
+          listener: BannerAdListener(onAdClosed: (ad) => ad.dispose()),
         );
 
         ads['myBanner$i']!.load();
@@ -126,6 +124,7 @@ class Home extends StatelessWidget {
                   height: Get.size.height,
                   width: Get.size.width,
                   child: ListView.separated(
+                      cacheExtent: 300,
                       padding: EdgeInsets.all(8),
                       itemBuilder: (_, index) {
                         Sticker _sticker = h.stickers.elementAt(index);
@@ -164,7 +163,7 @@ class Home extends StatelessWidget {
                                   children: [
                                     Padding(
                                       padding: EdgeInsets.only(
-                                          left: (Get.size.width / 3.4),
+                                          left: (Get.size.width / 3.6),
                                           bottom: 8,
                                           top: 8),
                                       child: Image.network(
@@ -255,6 +254,7 @@ class Home extends StatelessWidget {
                     for (var index in h.seleccionado) {
                       _stickers.add(h.stickers.elementAt(index));
                     }
+                    print(_stickers.length);
                     FirebaseAnalytics.instance
                         .setCurrentScreen(screenName: 'Detalle_Page');
                     Get.to(() => Detalle(stickers: _stickers));

@@ -14,13 +14,18 @@ class Comments extends StatelessWidget {
     var c = Get.find<HomeController>();
     TextEditingController _controller = TextEditingController();
 
-    Future<void> commentsAdd() async {
+    Future<void> commentsAdd(bool sumar) async {
       await FirebaseFirestore.instance.runTransaction((transaction) async {
         DocumentReference _likesReference = Db().stickers().doc(id);
 
         DocumentSnapshot _snapshot = await transaction.get(_likesReference);
 
-        int newFollowerCount = _snapshot.get('comments') + 1;
+        int newFollowerCount;
+        if (sumar) {
+          newFollowerCount = _snapshot.get('comments') + 1;
+        } else {
+          newFollowerCount = _snapshot.get('comments') - 1;
+        }
 
         // Perform an update on the document
         transaction.update(_likesReference, {'comments': newFollowerCount});
@@ -36,7 +41,7 @@ class Comments extends StatelessWidget {
           'texto': _controller.text,
           'user': c.user.value!.user!.uid.substring(0, 5)
         });
-        commentsAdd();
+        commentsAdd(true);
         _controller.clear();
       }
     }
@@ -90,14 +95,17 @@ class Comments extends StatelessWidget {
                                           .get('user') ==
                                       c.user.value!.user!.uid.substring(0, 5)
                                   ? IconButton(
-                                      onPressed: () => Db()
-                                          .stickers()
-                                          .doc(id)
-                                          .collection('comentarios')
-                                          .doc(snap.data!.docs
-                                              .elementAt(index)
-                                              .id)
-                                          .delete(),
+                                      onPressed: () {
+                                        Db()
+                                            .stickers()
+                                            .doc(id)
+                                            .collection('comentarios')
+                                            .doc(snap.data!.docs
+                                                .elementAt(index)
+                                                .id)
+                                            .delete();
+                                        commentsAdd(false);
+                                      },
                                       icon: Icon(Icons.delete))
                                   : Container(),
                               subtitle: Text(

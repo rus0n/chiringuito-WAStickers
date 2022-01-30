@@ -33,6 +33,10 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
+    
+    androidResources {
+        noCompress 'webp'
+    }
 
 
     compileSdkVersion flutter.compileSdkVersion
@@ -76,9 +80,6 @@ android {
             minifyEnabled true
            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
-    }
-    androidResources {
-        noCompress 'webp'
     }
 }
 
