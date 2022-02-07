@@ -1,7 +1,6 @@
 import 'package:chiringuito/bottom_navigator.dart';
-import 'package:chiringuito/screens/home.dart';
-import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_in_app_messaging/firebase_in_app_messaging.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -30,8 +29,16 @@ Future<void> main() async {
   //await FirebaseAppCheck.instance.activate(
   //    webRecaptchaSiteKey: "6Lc6DPcdAAAAANNKAykGIeGcl9MLsx0k50Vfbi-q");
 
+  await init();
+  runApp(MyApp());
+}
+
+init() async {
   await Firebase.initializeApp();
   await MobileAds.instance.initialize();
+
+  FirebaseInAppMessaging fiam = FirebaseInAppMessaging.instance;
+  fiam.setAutomaticDataCollectionEnabled(true);
 
   await GetStorage.init();
 
@@ -41,24 +48,15 @@ Future<void> main() async {
 
   await configurarLocalTimeZone();
   AndroidInitializationSettings initializationSettingsAndroid =
-      AndroidInitializationSettings('splash');
+      AndroidInitializationSettings('@mipmap/notificacion');
   final settings =
       InitializationSettings(android: initializationSettingsAndroid);
   flutterLocalNotificationsPlugin.initialize(settings,
       onSelectNotification: (String? payload) async {
     if (payload != null && payload == 'dialog') {
       debugPrint('payload: ' + payload);
-
-      Get.dialog(SimpleDialog(
-        title: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Text('Nuevos stickers Disponibles'),
-        ),
-      ));
     }
   });
-
-  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {

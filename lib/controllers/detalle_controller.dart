@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:math';
 
 import 'package:chiringuito/models/stickers_model.dart';
 import 'package:firebase_storage/firebase_storage.dart';
