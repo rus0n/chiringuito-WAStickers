@@ -95,7 +95,8 @@ class HomeController extends GetxController {
       newVersion.showUpdateDialog(
         context: Get.context!,
         versionStatus: status,
-        dialogText: 'Actualizacion disponible',
+        dialogText: status.releaseNotes,
+        dialogTitle: 'Actualizacion disponible ${status.storeVersion}',
         updateButtonText: 'Actualizar',
         dismissButtonText: 'Más tarde',
       );
