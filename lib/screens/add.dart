@@ -15,7 +15,6 @@ class _AddState extends State<Add> {
   File file = File('default');
   @override
   Widget build(BuildContext context) {
-    bool animado = false;
     return Scaffold(
         appBar: AppBar(
           title: Text('Añadir sticker'),

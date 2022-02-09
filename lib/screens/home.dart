@@ -1,5 +1,4 @@
 import 'package:chiringuito/controllers/home_controller.dart';
-import 'package:chiringuito/db/firestore.dart';
 import 'package:chiringuito/models/stickers_model.dart';
 import 'package:chiringuito/screens/detalle.dart';
 import 'package:chiringuito/screens/list_stickers.dart';

@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:chiringuito/controllers/detalle_controller.dart';
 import 'package:chiringuito/db/firestore.dart';
 import 'package:chiringuito/models/stickers_model.dart';
