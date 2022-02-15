@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:chiringuito/controllers/detalle_controller.dart';
 import 'package:chiringuito/db/firestore.dart';
 import 'package:chiringuito/models/stickers_model.dart';
@@ -32,20 +30,9 @@ class Detalle extends StatelessWidget {
       });
     }
 
-    return Scaffold(
+    return Obx(() => Scaffold(
         appBar: AppBar(
           title: Text('Stickers Seleccionados'),
-          actions: [
-            IconButton(
-                onPressed: () => Get.dialog(SimpleDialog(
-                      title: Text('Informacion'),
-                      children: [
-                        Text(
-                            'Si se necesita instalar un nuevo paquete ya que sobrepasa los 30 stickers, se hace de forma automatica. Si no se actualizará el paquete actual.')
-                      ],
-                    )),
-                icon: Icon(Icons.info))
-          ],
         ),
         body: GridView.builder(
             padding: const EdgeInsets.all(16.0),
@@ -95,8 +82,17 @@ class Detalle extends StatelessWidget {
                     backgroundColor: MaterialStateColor.resolveWith(
                         (states) => Color.fromRGBO(7, 94, 84, 1))),
                 onPressed: () => d.createLocalFile(stickers),
-                child: Text('Añadir a WhatsApp'))
+                child: d.load.value
+                    ? Text('Añadir a WhatsApp')
+                    : SizedBox(
+                        height: 60,
+                        width: 60,
+                        child: Center(
+                            child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: CircularProgressIndicator(),
+                        ))))
           ],
-        ));
+        )));
   }
 }

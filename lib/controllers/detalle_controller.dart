@@ -1,30 +1,30 @@
 import 'dart:io';
-import 'dart:math';
 
-import 'package:chiringuito/controllers/home_controller.dart';
 import 'package:chiringuito/models/stickers_model.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:whatsapp_stickers/whatsapp_stickers.dart';
 import 'package:whatsapp_stickers/exceptions.dart';
+import 'package:whatsapp_stickers/whatsapp_stickers.dart';
 
 class DetalleController extends GetxController {
   GetStorage gs = GetStorage();
 
-  String id =
-      ((Random().nextInt(30) * 400) + DateTime.now().microsecond).toString();
+  int id = 1;
 
   InterstitialAd? myInterstitialAd;
+
+  var load = false.obs;
 
   @override
   void onInit() {
     super.onInit();
     loadAd();
+    id = (gs.read('id')) ?? id;
+    print(id);
   }
 
   void createLocalFile(List<Sticker> stickers) async {
@@ -47,9 +47,9 @@ class DetalleController extends GetxController {
     String dir = (await getApplicationDocumentsDirectory()).path;
 
     var stickerPack = WhatsappStickers(
-        identifier: id,
+        identifier: '$id',
         name: 'Chiringuito WAStickers $id',
-        publisher: 'Chinguito WAStickers',
+        publisher: 'Chinguito Stickers App',
         trayImageFileName:
             WhatsappStickerImage.fromAsset('images/trayImage.png'));
 
@@ -68,6 +68,8 @@ class DetalleController extends GetxController {
 
     try {
       await stickerPack.sendToWhatsApp();
+      id = id++;
+      gs.write('id', id);
     } on WhatsappStickersException catch (e) {
       print(e.cause);
     }
@@ -82,6 +84,7 @@ class DetalleController extends GetxController {
           onAdLoaded: (InterstitialAd ad) {
             // Keep a reference to the ad so you can show it later.
             myInterstitialAd = ad;
+            load.value = true;
           },
           onAdFailedToLoad: (LoadAdError error) {
             print('InterstitialAd failed to load: $error');

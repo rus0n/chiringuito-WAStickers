@@ -17,6 +17,11 @@
 
 -keepattributes *Annotation*
 
+# For communication with AdColony's WebView
+-keepclassmembers class * { 
+    @android.webkit.JavascriptInterface <methods>; 
+}
+
 # Gson specific classes
 -dontwarn sun.misc.**
 #-keep class com.google.gson.stream.** { *; }

@@ -33,6 +33,10 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
+    
+    androidResources {
+        noCompress 'webp'
+    }
 
 
     compileSdkVersion flutter.compileSdkVersion
@@ -57,7 +61,6 @@ android {
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
-        buildConfigField "String", "STICKER_PACK_FILE", "\"sticker_packs.json\""
     }
 
     signingConfigs {
@@ -78,9 +81,6 @@ android {
            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    androidResources {
-        noCompress 'webp'
-    }
 }
 
 flutter {
@@ -91,4 +91,6 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'com.google.firebase:firebase-appcheck-debug:16.0.0-beta04'
     implementation 'com.google.firebase:firebase-appcheck-safetynet:'
+    implementation 'com.adcolony:sdk:4.6.5'
+    implementation 'com.google.android.gms:play-services-ads-identifier:18.0.1'
 }
