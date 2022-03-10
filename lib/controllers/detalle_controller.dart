@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:chiringuito/models/stickers_model.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -9,21 +8,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:flutter_whatsapp_stickers/flutter_whatsapp_stickers.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:path_provider/path_provider.dart';
 
 class DetalleController extends GetxController {
-  GetStorage gs = GetStorage();
-
   int id = 1;
-
-  InterstitialAd? myInterstitialAd;
 
   @override
   void onInit() {
     super.onInit();
-    loadAd();
     checkWhatsapp();
     prepareDirectory();
     checkInstallStatus();
@@ -220,41 +212,5 @@ class DetalleController extends GetxController {
     if (action == StickerPackResult.ADD_SUCCESSFUL) {
       print('succesful');
     }
-  }
-
-  loadAd() {
-    InterstitialAd.load(
-        adUnitId: //'ca-app-pub-3940256099942544/1033173712',
-            'ca-app-pub-6592025069346248/5401403908',
-        request: const AdRequest(),
-        adLoadCallback: InterstitialAdLoadCallback(
-          onAdLoaded: (InterstitialAd ad) {
-            // Keep a reference to the ad so you can show it later.
-            myInterstitialAd = ad;
-          },
-          onAdFailedToLoad: (LoadAdError error) {
-            print('InterstitialAd failed to load: $error');
-          },
-        ));
-  }
-
-  showAd() {
-    myInterstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
-      onAdShowedFullScreenContent: (InterstitialAd ad) =>
-          print('%ad onAdShowedFullScreenContent.'),
-      onAdDismissedFullScreenContent: (InterstitialAd ad) {
-        print('$ad onAdDismissedFullScreenContent.');
-        ad.dispose();
-        loadAd();
-      },
-      onAdFailedToShowFullScreenContent: (InterstitialAd ad, AdError error) {
-        print('$ad onAdFailedToShowFullScreenContent: $error');
-        ad.dispose();
-        loadAd();
-      },
-      onAdImpression: (InterstitialAd ad) => print('$ad impression occurred.'),
-    );
-    myInterstitialAd!.show();
-    myInterstitialAd = null;
   }
 }
